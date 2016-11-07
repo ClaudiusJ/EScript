@@ -1,8 +1,8 @@
 # CMakeLists.txt
 # This file is part of the EScript programming language (https://github.com/EScript)
 #
-# Copyright (C) 2011-2014 Claudius Jähn <ClaudiusJ@live.de>
-# Copyright (C) 2011-2013 Benjamin Eikel <benjamin@eikel.org>
+# Copyright (C) 2011-2014 Claudius JÃ¤hn <ClaudiusJ@live.de>
+# Copyright (C) 2011-2016 Benjamin Eikel <benjamin@eikel.org>
 #
 # Licensed under the MIT License. See LICENSE file for details.
 # ---------------------------------------------------------------------------------
@@ -69,10 +69,23 @@ set(ESCRIPT_SOURCES
 	E_Libs/MathLib.cpp
 	E_Libs/StdLib.cpp
 )
+option(BUILD_ESCRIPT_THREADING "Defines if EScript is built with threading support.")
+if(BUILD_ESCRIPT_THREADING)
+	list(APPEND ESCRIPT_SOURCES E_Libs/ThreadingLib.cpp)
+endif()
 if(WIN32)
 	list(APPEND ESCRIPT_SOURCES E_Libs/Win32Lib.cpp)
 endif()
 add_library(EScript SHARED ${ESCRIPT_SOURCES})
+
+if(BUILD_ESCRIPT_THREADING)
+	target_compile_definitions(EScript PRIVATE ES_THREADING)
+	
+	# Dependency on pthread
+	set(THREADS_PREFER_PTHREAD_FLAG ON)
+	find_package(Threads REQUIRED)
+	target_link_libraries(EScript PRIVATE Threads::Threads)
+endif()
 
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)

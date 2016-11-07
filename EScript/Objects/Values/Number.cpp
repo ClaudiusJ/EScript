@@ -289,6 +289,7 @@ Number * Number::create(double value){
 	#ifdef ES_DEBUG_MEMORY
 	return new Number(value);
 	#endif
+#ifdef ES_THREADING
 	auto lock = SyncTools::tryLock(poolMutex);
 	if(lock.owns_lock()){
 		if(pool.empty()){
@@ -301,8 +302,11 @@ Number * Number::create(double value){
 			return n;
 		}
 	}else{
+#endif /* ES_THREADING */
 		return new Number(value);
+#ifdef ES_THREADING
 	}
+#endif /* ES_THREADING */
 }
 
 //! (static)
@@ -315,12 +319,16 @@ void Number::release(Number * n){
 		delete n;
 		std::cout << "Found diff NumberType\n";
 	}else{
+#ifdef ES_THREADING
 		auto lock = SyncTools::tryLock(poolMutex);
 		if(lock.owns_lock()){
 			pool.push(n);
 		}else{
+#endif /* ES_THREADING */
 			delete n;
+#ifdef ES_THREADING
 		}
+#endif /* ES_THREADING */
 	}
 }
 //----------------------------------------------------------

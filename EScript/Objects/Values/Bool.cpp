@@ -88,6 +88,7 @@ Bool * Bool::create(bool value){
 	#ifdef ES_DEBUG_MEMORY
 	return new Bool(value);
 	#endif
+#ifdef ES_THREADING
 	auto lock = SyncTools::tryLock(poolMutex);
 	if(lock.owns_lock()){
 		if(pool.empty()){
@@ -101,9 +102,11 @@ Bool * Bool::create(bool value){
 			return o;
 		}
 	}else{
+#endif /* ES_THREADING */
 		return new Bool(false);
+#ifdef ES_THREADING
 	}
-
+#endif /* ES_THREADING */
 }
 void Bool::release(Bool * o){
 	#ifdef ES_DEBUG_MEMORY
@@ -114,12 +117,16 @@ void Bool::release(Bool * o){
 		delete o;
 		std::cout << "Found diff BoolType\n";
 	}else{
+#ifdef ES_THREADING
 		auto lock = SyncTools::tryLock(poolMutex);
 		if(lock.owns_lock()){
 			pool.push(o);
 		}else{
+#endif /* ES_THREADING */
 			delete o;
+#ifdef ES_THREADING
 		}
+#endif /* ES_THREADING */
 	}
 }
 

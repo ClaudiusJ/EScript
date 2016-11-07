@@ -272,7 +272,7 @@ String * String::create(const StringData & sData){
 	#ifdef ES_DEBUG_MEMORY
 	return new String(sData);
 	#endif
-	
+#ifdef ES_THREADING
 	auto lock = SyncTools::tryLock(poolMutex);
 	if(lock.owns_lock()){
 		if(pool.empty()){
@@ -285,8 +285,11 @@ String * String::create(const StringData & sData){
 			return o;
 		}
 	}else{
+#endif /* ES_THREADING */
 		return new String(sData);
+#ifdef ES_THREADING
 	}
+#endif /* ES_THREADING */
 }
 void String::release(String * o){
 	#ifdef ES_DEBUG_MEMORY
@@ -297,12 +300,16 @@ void String::release(String * o){
 		delete o;
 		std::cout << "(internal) String::release: Invalid StringType\n";
 	}else{
+#ifdef ES_THREADING
 		auto lock = SyncTools::tryLock(poolMutex);
 		if(lock.owns_lock()){
 			pool.push(o);
 		}else{
+#endif /* ES_THREADING */
 			delete o;
+#ifdef ES_THREADING
 		}
+#endif /* ES_THREADING */
 	}
 }
 //---

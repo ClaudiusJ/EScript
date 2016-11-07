@@ -29,6 +29,7 @@ static SyncTools::FastLock poolMutex;
 FunctionCallContext * FunctionCallContext::create(ERef<UserFunction> userFunction,ObjRef _caller){
 	FunctionCallContext * fcc = nullptr;
 	{
+#ifdef ES_THREADING
 		auto lock = SyncTools::tryLock(poolMutex);
 		if(lock.owns_lock()){
 			if(pool.empty()){
@@ -39,8 +40,11 @@ FunctionCallContext * FunctionCallContext::create(ERef<UserFunction> userFunctio
 				pool.pop();
 			}
 		}else{
+#endif /* ES_THREADING */
 			fcc = new FunctionCallContext;
+#ifdef ES_THREADING
 		}
+#endif /* ES_THREADING */
 	}
 //	fcc = new FunctionCallContext;
 //	assert(userFunction); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -52,12 +56,16 @@ FunctionCallContext * FunctionCallContext::create(ERef<UserFunction> userFunctio
 void FunctionCallContext::release(FunctionCallContext *fcc){
 	fcc->reset();
 	{
+#ifdef ES_THREADING
 		auto lock = SyncTools::tryLock(poolMutex);
 		if(lock.owns_lock()){
 			pool.push(fcc);
 		}else{
+#endif /* ES_THREADING */
 			delete fcc;
+#ifdef ES_THREADING
 		}
+#endif /* ES_THREADING */
 	}
 }
 
