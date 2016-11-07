@@ -122,20 +122,21 @@ class Runtime : public ExtObject {
 		std::string getCurrentFile()const;
 		int getCurrentLine()const;
 		uint32_t getLogCounter(Logger::level_t level)const;
-		LoggerGroup * getLogger()const					{	return logger.get();	}
-		Logger::level_t getLoggingLevel()				{	return logger->getMinLevel();	}
+		LoggerGroup & getLogger()						{	return logger;	}
+		const LoggerGroup & getLogger() const			{	return logger;	}
+		Logger::level_t getLoggingLevel()				{	return logger.getMinLevel();	}
 		std::string getStackInfo();
 		std::string getLocalStackInfo();
 
-		void log(Logger::level_t l,const std::string & s)	{	logger->log(l,s);	}
+		void log(Logger::level_t l,const std::string & s)	{	logger.log(l,s);	}
 		void resetLogCounter(Logger::level_t level);
 
 		void setAddStackInfoToExceptions(bool b);
-		void setLoggingLevel(Logger::level_t level)		{	logger->setMinLevel(level);	}
+		void setLoggingLevel(Logger::level_t level)		{	logger.setMinLevel(level);	}
 		void setTreatWarningsAsError(bool b);
 
 	private:
-		_CountedRef<LoggerGroup> logger;
+		LoggerGroup logger;
 	//	@}
 
 };

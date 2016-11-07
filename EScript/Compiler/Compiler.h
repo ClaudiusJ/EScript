@@ -10,7 +10,6 @@
 #define ES_COMPILER_H
 
 #include "../Utils/CodeFragment.h"
-#include "../Utils/Logger.h"
 #include "../Utils/StringId.h"
 #include "../Utils/StringData.h"
 #include "../Instructions/Instruction.h"
@@ -33,7 +32,7 @@ class ASTNode;
 
 class Compiler {
 	public:
-		Compiler(Logger * _logger = nullptr);
+		Compiler(Logger & _logger);
 
 		std::pair<ERef<UserFunction>,_CountedRef<StaticData>> compile(const CodeFragment & code,const std::vector<StringId>& injectedStaticVarNames);
 
@@ -42,9 +41,9 @@ class Compiler {
 	//! @name Logging
 	//	@{
 	public:
-		Logger * getLogger()const				{	return logger.get();	}
+		Logger & getLogger()const				{	return logger;	}
 	private:
-		_CountedRef<Logger> logger;
+		Logger & logger;
 	//	@}
 	// -------------
 

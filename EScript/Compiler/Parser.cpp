@@ -25,6 +25,7 @@
 #include "../Consts.h"
 
 #include "../Utils/IO/IO.h"
+#include "../Utils/Logger.h"
 #include "../Objects/Callables/UserFunction.h"
 
 #include <cstdio>
@@ -2150,8 +2151,8 @@ ASTNode::refArray_t readExpressionsInBrackets(ParsingContext & ctxt,int & cursor
 // ---------------------------------
 
 //!	(ctor)
-Parser::Parser(Logger * _logger) :
-		logger(_logger ? _logger : new StdLogger(std::cout)) {
+Parser::Parser(Logger & _logger) :
+		logger(_logger) {
 	//ctor
 }
 
@@ -2163,7 +2164,7 @@ ERef<AST::Block> Parser::parse(const CodeFragment & code) {
 	tokenizer.defineToken("__DIR__",new TValueString(IO::dirname(code.getFilename())));
 
 	Tokenizer::tokenList_t tokens;
-	ParsingContext ctxt(tokens,code,*logger.get());
+	ParsingContext ctxt(tokens,code,logger);
 	ctxt.rootBlock = rootBlock.get();
 
 	/// 1. Tokenize

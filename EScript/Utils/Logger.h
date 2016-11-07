@@ -13,13 +13,14 @@
 #include "ObjRef.h"
 
 #include <map>
-#include <string>
+#include <memory>
 #include <ostream>
+#include <string>
 
 namespace EScript {
 
 //! [Logger]
-class Logger : public EReferenceCounter<Logger> {
+class Logger {
 	public:
 		enum level_t{
 			LOG_ALL = 0,
@@ -65,16 +66,17 @@ class Logger : public EReferenceCounter<Logger> {
 class LoggerGroup : public Logger {
 	public:
 		LoggerGroup(level_t _minLevel = LOG_ALL,level_t _maxLevel = LOG_NONE) : Logger(_minLevel,_maxLevel){}
-		virtual ~LoggerGroup(){}
+		virtual ~LoggerGroup() = default;
 
-		void addLogger(const std::string & name,Logger * logger);
+		void addLogger(const std::string & name, const std::shared_ptr<Logger> & logger);
 		bool removeLogger(const std::string & name);
 		void clearLoggers();
 		Logger * getLogger(const std::string & name);
+		const Logger * getLogger(const std::string & name) const;
 	private:
 		//! ---|> Logger
 		void doLog(level_t l,const std::string & msg) override;
-		typedef std::map<std::string, _CountedRef<Logger> > loggerRegistry_t;
+		using loggerRegistry_t = std::map<std::string, std::shared_ptr<Logger>>;
 		loggerRegistry_t loggerRegistry;
 };
 

@@ -1226,7 +1226,7 @@ void RuntimeInternals::warn(const std::string & s)const {
 	if(getActiveFCC()){
 		os<<" ('" << getActiveFCC()->getUserFunction()->getCode().getFilename() << "':~"<<getCurrentLine()<<")";
 	}
-	runtime.getLogger()->warn(os.str());
+	runtime.getLogger().warn(os.str());
 }
 
 // -------------------------------------------------------------

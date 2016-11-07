@@ -21,6 +21,7 @@
 #include "../Utils/Logger.h"
 #include <algorithm>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <stack>
 
@@ -135,12 +136,12 @@ Runtime::Runtime() :
 		internals(new RuntimeInternals(*this,
 										EScript::getSGlobals()->clone(),
 										std::make_shared<RuntimeInternals::SharedRuntimeContext>())),
-		logger(new LoggerGroup(Logger::LOG_WARNING)){
+		logger(Logger::LOG_WARNING){
 			
 	declareConstant(internals->getGlobals(),"GLOBALS",internals->getGlobals());
 	declareConstant(internals->getGlobals(),"SGLOBALS",EScript::getSGlobals());
 
-	logger->addLogger("coutLogger",new StdLogger(std::cout));
+	logger.addLogger("coutLogger", std::make_shared<StdLogger>(std::cout));
 	//ctor
 }
 
@@ -155,11 +156,7 @@ Runtime::Runtime(const Runtime& other) :
 }
 
 //! (dtor)
-Runtime::~Runtime() {
-//	declareConstant(internals->getGlobals(), "GLOBALS",nullptr); //! \todo threading: Remove this and check the effect.
-	internals.reset(nullptr);
-	//dtor
-}
+Runtime::~Runtime() = default;
 
 ERef<Runtime> Runtime::_fork()const{
 	return new Runtime(*this);
@@ -247,7 +244,7 @@ size_t Runtime::getStackSize()const					{	return internals->getStackSize();	}
 
 size_t Runtime::_getStackSizeLimit()const			{	return internals->_getStackSizeLimit();	}
 
-void Runtime::info(const std::string & s)			{	logger->info(s);	}
+void Runtime::info(const std::string & s)			{	logger.info(s);	}
 
 void Runtime::setAddStackInfoToExceptions(bool b)	{	internals->setAddStackInfoToExceptions(b);	}
 
@@ -261,7 +258,7 @@ void Runtime::_setStackSizeLimit(const size_t s)	{	internals->_setStackSizeLimit
 
 void Runtime::setTreatWarningsAsError(bool b){
 	if(b){ // --> disable coutLogger and add throwLogger
-		Logger * coutLogger = logger->getLogger("coutLogger");
+		Logger * coutLogger = logger.getLogger("coutLogger");
 		if(coutLogger!=nullptr)
 			coutLogger->setMinLevel(Logger::LOG_ERROR);
 
@@ -272,12 +269,12 @@ void Runtime::setTreatWarningsAsError(bool b){
 		public:
 			ThrowLogger(Runtime & _rt) : Logger(LOG_PEDANTIC_WARNING,LOG_WARNING), rt(_rt){}
 		};
-		logger->addLogger("throwLogger",new ThrowLogger(*this));
+		logger.addLogger("throwLogger", std::make_shared<ThrowLogger>(*this));
 	}else{
-		Logger * coutLogger = logger->getLogger("coutLogger");
+		Logger * coutLogger = logger.getLogger("coutLogger");
 		if(coutLogger!=nullptr)
 			coutLogger->setMinLevel(Logger::LOG_ALL);
-		logger->removeLogger("throwLogger");
+		logger.removeLogger("throwLogger");
 	}
 }
 void Runtime::throwException(const std::string & s,Object * obj){	internals->throwException(s,obj);	}
@@ -330,22 +327,22 @@ public:
 };
 
 void Runtime::enableLogCounting(){
-	if(logger->getLogger("countingLogger")==nullptr)
-		logger->addLogger("countingLogger",new CountingLogger);
+	if(logger.getLogger("countingLogger")==nullptr)
+		logger.addLogger("countingLogger", std::make_shared<CountingLogger>());
 }
 
 void Runtime::disableLogCounting(){
-	logger->removeLogger("countingLogger");
+	logger.removeLogger("countingLogger");
 }
 
 void Runtime::resetLogCounter(Logger::level_t level){
-	CountingLogger * l = dynamic_cast<CountingLogger*>(logger->getLogger("countingLogger"));
+	CountingLogger * l = dynamic_cast<CountingLogger*>(logger.getLogger("countingLogger"));
 	if(l!=nullptr)
 		l->reset(level);
 }
 
 uint32_t Runtime::getLogCounter(Logger::level_t level)const{
-	CountingLogger * l = dynamic_cast<CountingLogger*>(logger->getLogger("countingLogger"));
+	auto l = dynamic_cast<const CountingLogger*>(logger.getLogger("countingLogger"));
 	return l==nullptr ? 0 : l->get(level);
 }
 

@@ -13,7 +13,6 @@
 #include "Tokenizer.h"
 
 #include "../Utils/CodeFragment.h"
-#include "../Utils/Logger.h"
 
 #include <vector>
 
@@ -22,6 +21,7 @@
 #endif
 
 namespace EScript {
+class Logger;
 namespace AST{
 class Block;
 }
@@ -29,10 +29,10 @@ class Block;
 //! [Parser]
 class Parser {
 	public:
-		Parser(Logger * logger = nullptr);
+		Parser(Logger & _logger);
 		ERef<AST::Block> parse(const CodeFragment & code);
 	private:
-		_CountedRef<Logger> logger;
+		Logger & logger;
 
 };
 }

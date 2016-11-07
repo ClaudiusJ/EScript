@@ -25,6 +25,7 @@
 #include "AST/UserFunctionExpr.h"
 #include "AST/ValueExpr.h"
 #include "../Objects/Callables/UserFunction.h"
+#include "../Utils/Logger.h"
 
 #include <functional>
 #include <iostream>
@@ -48,7 +49,7 @@ static bool _handlerInitialized UNUSED_ATTRIBUTE = initHandler(handlerRegistry);
 
 
 //! (ctor)
-Compiler::Compiler(Logger * _logger) : logger(_logger ? _logger : new StdLogger(std::cout)) {
+Compiler::Compiler(Logger & _logger) : logger(_logger) {
 }
 
 std::pair<ERef<UserFunction>,_CountedRef<StaticData>>

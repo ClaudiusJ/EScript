@@ -7,8 +7,9 @@
 // Licensed under the MIT License. See LICENSE file for details.
 // ---------------------------------------------------------------------------------
 #include "Logger.h"
-#include <stdexcept>
 #include <iostream>
+#include <memory>
+#include <stdexcept>
 
 namespace EScript{
 
@@ -16,9 +17,10 @@ namespace EScript{
 
 // ------------------------------------------------
 // LoggerGroup
-void LoggerGroup::addLogger(const std::string & name,Logger * logger){
-	if(logger==nullptr)
+void LoggerGroup::addLogger(const std::string & name, const std::shared_ptr<Logger> & logger){
+	if (!logger) {
 		throw std::invalid_argument("addLogger(nullptr)");
+	}
 	loggerRegistry[name] = logger;
 }
 
@@ -31,6 +33,13 @@ void LoggerGroup::clearLoggers(){
 Logger * LoggerGroup::getLogger(const std::string & name){
 	const loggerRegistry_t::iterator lbIt = loggerRegistry.lower_bound(name);
 	if(lbIt!=loggerRegistry.end() && !(loggerRegistry.key_comp()(name, lbIt->first)) ){
+		return lbIt->second.get();
+	}
+	return nullptr;
+}
+const Logger * LoggerGroup::getLogger(const std::string & name) const{
+	const auto lbIt = loggerRegistry.lower_bound(name);
+	if(lbIt!=loggerRegistry.cend() && !(loggerRegistry.key_comp()(name, lbIt->first)) ){
 		return lbIt->second.get();
 	}
 	return nullptr;
